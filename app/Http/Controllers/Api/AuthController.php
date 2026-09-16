@@ -1,0 +1,54 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use App\Models\Artist;
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+
+class AuthController extends Controller
+{
+    public function register(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users,email',
+            'password' => 'required|string|min:8|confirmed',
+            'bio' => 'nullable|string|max:1000',
+            'profile_photo' => 'nullable|image|max:5120',
+        ]);
+
+        $user = User::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
+            'role' => 'artist',
+        ]);
+
+        $profilePhotoPath = $request->hasFile('profile_photo')
+            ? $request->file('profile_photo')->store('artists', 'public')
+            : null;
+
+        $artist = Artist::create([
+            'user_id' => $user->id,
+            'bio' => $validated['bio'] ?? null,
+            'profile_photo' => $profilePhotoPath,
+        ]);
+
+        $token = $user->createToken('auth-token')->accessToken;
+
+        $response = [
+            'user' => $user,
+            'artist' => $artist,
+            'token' => $token,
+        ];
+
+        if (empty($validated['bio']) && ! $profilePhotoPath) {
+            $response['message'] = 'Registration successful! Complete your profile to unlock all features.';
+        }
+
+        return response()->json($response, 201);
+    }
+}
