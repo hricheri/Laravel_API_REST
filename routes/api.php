@@ -16,4 +16,6 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [ArtistController::class, 'me']);
     Route::put('/me', [ArtistController::class, 'updateMe']);
+
+    Route::get('/artists', [ArtistController::class, 'index'])->middleware('role:admin');
 });

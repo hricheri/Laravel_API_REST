@@ -3,10 +3,18 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Artist;
 use Illuminate\Http\Request;
 
 class ArtistController extends Controller
 {
+    public function index(Request $request)
+    {
+        $artists = Artist::with('user')->get();
+
+        return response()->json(['artists' => $artists], 200);
+    }
+
     public function me(Request $request)
     {
         $user = $request->user();
