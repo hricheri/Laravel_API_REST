@@ -12,6 +12,7 @@ class ArtistFactory extends Factory
         return [
             'user_id' => User::factory(),
             'bio' => $this->faker->sentence(),
+            'city' => $this->faker->city(),
             'profile_photo' => null,
             'is_verified' => false,
         ];
