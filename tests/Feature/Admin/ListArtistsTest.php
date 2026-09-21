@@ -26,20 +26,6 @@ class ListArtistsTest extends TestCase
             ->assertJsonCount(3, 'artists');
     }
 
-    public function test_a_regular_artist_cannot_list_all_artists(): void
-    {
-        $user = User::factory()->create(['role' => 'artist']);
-        Artist::factory()->create(['user_id' => $user->id]);
-
-        Artist::factory()->count(3)->create();
-
-        Passport::actingAs($user);
-
-        $response = $this->getJson('/api/artists');
-
-        $response->assertStatus(403);
-    }
-
     public function test_listing_all_artists_fails_without_authentication(): void
     {
         $response = $this->getJson('/api/artists');

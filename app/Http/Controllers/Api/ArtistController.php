@@ -10,7 +10,30 @@ class ArtistController extends Controller
 {
     public function index(Request $request)
     {
-        $artists = Artist::with('user')->get();
+        $user = $request->user();
+
+        if ($user->isAdmin()) {
+            $artists = Artist::with('user')->get();
+
+            return response()->json(['artists' => $artists], 200);
+        }
+
+        return $this->explore($request);
+    }
+
+    private function explore(Request $request)
+    {
+        $myArtist = $request->user()->artist;
+
+        $query = Artist::with('user')->where('user_id', '!=', $request->user()->id);
+
+        $filter = $request->query('filter', 'all');
+
+        if ($filter === 'city' && $request->filled('city')) {
+            $query->where('city', $request->query('city'));
+        }
+
+        $artists = $query->get();
 
         return response()->json(['artists' => $artists], 200);
     }

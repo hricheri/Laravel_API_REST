@@ -17,8 +17,9 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/me', [ArtistController::class, 'me']);
     Route::put('/me', [ArtistController::class, 'updateMe']);
 
+    Route::get('/artists', [ArtistController::class, 'index']);
+
     Route::middleware('role:admin')->group(function () {
-        Route::get('/artists', [ArtistController::class, 'index']);
         Route::put('/artists/{artist}', [ArtistController::class, 'verify']);
     });
 });
