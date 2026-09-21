@@ -15,6 +15,17 @@ class ArtistController extends Controller
         return response()->json(['artists' => $artists], 200);
     }
 
+    public function verify(Request $request, Artist $artist)
+    {
+        $validated = $request->validate([
+            'is_verified' => 'required|boolean',
+        ]);
+
+        $artist->update(['is_verified' => $validated['is_verified']]);
+
+        return response()->json(['artist' => $artist->fresh()], 200);
+    }
+
     public function me(Request $request)
     {
         $user = $request->user();
