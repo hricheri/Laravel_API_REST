@@ -2,11 +2,16 @@
 
 namespace App\Models;
 
+use Database\Factories\ArtistFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Artist extends Model
 {
+    /** @use HasFactory<ArtistFactory> */
+    use HasFactory;
+
     protected $fillable = [
         'user_id',
         'bio',

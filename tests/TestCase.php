@@ -4,6 +4,7 @@ namespace Tests;
 
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Schema;
 
 abstract class TestCase extends BaseTestCase
 {
@@ -11,7 +12,7 @@ abstract class TestCase extends BaseTestCase
     {
         parent::setUp();
 
-        if ($this->app->bound('db') && ! app()->environment('testing_no_passport')) {
+        if ($this->app->bound('db') && Schema::hasTable('oauth_clients')) {
             Artisan::call('passport:client', [
                 '--personal' => true,
                 '--name' => 'Testing Personal Access Client',
