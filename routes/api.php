@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\ArtistController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\AvailabilityController;
+use App\Http\Controllers\Api\LikeController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -22,6 +23,10 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/artists/{artist}/availabilities', [AvailabilityController::class, 'index']);
     Route::post('/artists/{artist}/availabilities', [AvailabilityController::class, 'store']);
     Route::delete('/artists/{artist}/availabilities', [AvailabilityController::class, 'destroy']);
+
+    Route::middleware('verified.artist')->group(function () {
+        Route::post('/likes', [LikeController::class, 'store']);
+    });
 
     Route::middleware('role:admin')->group(function () {
         Route::put('/artists/{artist}', [ArtistController::class, 'verify']);
