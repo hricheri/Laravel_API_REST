@@ -20,6 +20,7 @@ Route::middleware('auth:api')->group(function () {
 
     Route::get('/artists', [ArtistController::class, 'index']);
     Route::post('/artists/{artist}/availabilities', [AvailabilityController::class, 'store']);
+    Route::delete('/artists/{artist}/availabilities', [AvailabilityController::class, 'destroy']);
 
     Route::middleware('role:admin')->group(function () {
         Route::put('/artists/{artist}', [ArtistController::class, 'verify']);

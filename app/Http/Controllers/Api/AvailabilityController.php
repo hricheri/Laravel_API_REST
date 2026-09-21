@@ -34,4 +34,27 @@ class AvailabilityController extends Controller
             'availabilities' => $artist->availabilities()->orderBy('date')->get(),
         ], 201);
     }
+
+    public function destroy(Request $request, Artist $artist)
+    {
+        if ($artist->user_id !== $request->user()->id) {
+            return response()->json(['message' => 'Forbidden.'], 403);
+        }
+
+        $validated = $request->validate([
+            'date' => 'required_without:dates|date_format:Y-m-d',
+            'dates' => 'required_without:date|array|min:1',
+            'dates.*' => 'date_format:Y-m-d',
+        ]);
+
+        $dates = $validated['dates'] ?? [$validated['date']];
+
+        Availability::where('artist_id', $artist->id)
+            ->whereIn('date', $dates)
+            ->delete();
+
+        return response()->json([
+            'availabilities' => $artist->availabilities()->orderBy('date')->get(),
+        ], 200);
+    }
 }
