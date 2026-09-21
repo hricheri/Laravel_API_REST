@@ -19,6 +19,7 @@ Route::middleware('auth:api')->group(function () {
     Route::put('/me', [ArtistController::class, 'updateMe']);
 
     Route::get('/artists', [ArtistController::class, 'index']);
+    Route::get('/artists/{artist}/availabilities', [AvailabilityController::class, 'index']);
     Route::post('/artists/{artist}/availabilities', [AvailabilityController::class, 'store']);
     Route::delete('/artists/{artist}/availabilities', [AvailabilityController::class, 'destroy']);
 

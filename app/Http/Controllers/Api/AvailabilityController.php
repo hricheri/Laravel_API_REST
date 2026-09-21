@@ -9,6 +9,23 @@ use Illuminate\Http\Request;
 
 class AvailabilityController extends Controller
 {
+    public function index(Request $request, Artist $artist)
+    {
+        $isOwnProfile = $artist->user_id === $request->user()->id;
+
+        if (! $isOwnProfile) {
+            $myArtist = $request->user()->artist;
+
+            if (! $myArtist || ! $myArtist->is_verified) {
+                return response()->json(['message' => 'Your artist profile must be verified to access this resource.'], 403);
+            }
+        }
+
+        return response()->json([
+            'availabilities' => $artist->availabilities()->orderBy('date')->get(),
+        ], 200);
+    }
+
     public function store(Request $request, Artist $artist)
     {
         if ($artist->user_id !== $request->user()->id) {
