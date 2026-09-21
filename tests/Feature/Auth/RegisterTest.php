@@ -22,19 +22,20 @@ class RegisterTest extends TestCase
             'password' => 'password123',
             'password_confirmation' => 'password123',
             'bio' => 'Traveling tattoo artist.',
+            'city' => 'Barcelona',
             'profile_photo' => UploadedFile::fake()->image('profile.jpg'),
         ]);
 
         $response->assertStatus(201)
             ->assertJsonStructure([
                 'user' => ['id', 'name', 'email'],
-                'artist' => ['id', 'bio', 'profile_photo'],
+                'artist' => ['id', 'bio', 'city', 'profile_photo'],
                 'token',
             ])
             ->assertJsonMissing(['message']);
 
         $this->assertDatabaseHas('users', ['email' => 'jane@example.com']);
-        $this->assertDatabaseHas('artists', ['bio' => 'Traveling tattoo artist.']);
+        $this->assertDatabaseHas('artists', ['bio' => 'Traveling tattoo artist.', 'city' => 'Barcelona']);
     }
 
     public function test_a_user_can_register_without_bio_or_photo(): void
@@ -49,7 +50,7 @@ class RegisterTest extends TestCase
         $response->assertStatus(201)
             ->assertJsonStructure([
                 'user' => ['id', 'name', 'email'],
-                'artist' => ['id', 'bio', 'profile_photo'],
+                'artist' => ['id', 'bio', 'city', 'profile_photo'],
                 'token',
                 'message',
             ])

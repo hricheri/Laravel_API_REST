@@ -78,6 +78,28 @@ class UpdateMeTest extends TestCase
         ]);
     }
 
+    public function test_an_authenticated_user_can_update_their_city(): void
+    {
+        $user = User::factory()->create();
+        Artist::factory()->create(['user_id' => $user->id, 'city' => 'Old City']);
+
+        Passport::actingAs($user);
+
+        $response = $this->putJson('/api/me', [
+            'city' => 'Madrid',
+        ]);
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'artist' => ['city' => 'Madrid'],
+            ]);
+
+        $this->assertDatabaseHas('artists', [
+            'user_id' => $user->id,
+            'city' => 'Madrid',
+        ]);
+    }
+
     public function test_partial_update_does_not_erase_other_fields(): void
     {
         $user = User::factory()->create(['name' => 'Jane Doe']);

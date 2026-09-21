@@ -41,6 +41,7 @@ class ArtistController extends Controller
         $validated = $request->validate([
             'name' => 'sometimes|string|max:255',
             'bio' => 'sometimes|nullable|string|max:1000',
+            'city' => 'sometimes|nullable|string|max:255',
             'profile_photo' => 'sometimes|image|max:5120',
         ]);
 
@@ -54,6 +55,10 @@ class ArtistController extends Controller
 
         if (array_key_exists('bio', $validated)) {
             $artistData['bio'] = $validated['bio'];
+        }
+
+        if (array_key_exists('city', $validated)) {
+            $artistData['city'] = $validated['city'];
         }
 
         if ($request->hasFile('profile_photo')) {

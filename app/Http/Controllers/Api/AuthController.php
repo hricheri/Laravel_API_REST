@@ -18,6 +18,7 @@ class AuthController extends Controller
             'email' => 'required|string|email|max:255|unique:users,email',
             'password' => 'required|string|min:8|confirmed',
             'bio' => 'nullable|string|max:1000',
+            'city' => 'nullable|string|max:255',
             'profile_photo' => 'nullable|image|max:5120',
         ]);
 
@@ -35,6 +36,7 @@ class AuthController extends Controller
         $artist = Artist::create([
             'user_id' => $user->id,
             'bio' => $validated['bio'] ?? null,
+            'city' => $validated['city'] ?? null,
             'profile_photo' => $profilePhotoPath,
         ]);
 
