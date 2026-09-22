@@ -34,4 +34,14 @@ class Artist extends Model
     {
         return $this->hasMany(Availability::class);
     }
+
+    public function swapsAsA(): HasMany
+    {
+        return $this->hasMany(Swap::class, 'artist_a_id');
+    }
+
+    public function swapsAsB(): HasMany
+    {
+        return $this->hasMany(Swap::class, 'artist_b_id');
+    }
 }
