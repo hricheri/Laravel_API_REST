@@ -61,4 +61,22 @@ class SwapController extends Controller
 
         return response()->json(['swap' => $swap->fresh()], 200);
     }
+
+    public function reject(Request $request, Swap $swap)
+    {
+        $myArtist = $request->user()->artist;
+
+        if (! $myArtist || ! $swap->isParticipant($myArtist->id)) {
+            return response()->json(['message' => 'Forbidden.'], 403);
+        }
+
+        if (! in_array($swap->status, ['pending', 'confirmed'])) {
+            return response()->json(['message' => 'This swap can no longer be rejected or cancelled.'], 422);
+        }
+
+        $swap->status = $swap->status === 'confirmed' ? 'cancelled' : 'rejected';
+        $swap->save();
+
+        return response()->json(['swap' => $swap->fresh()], 200);
+    }
 }

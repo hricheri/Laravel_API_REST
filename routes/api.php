@@ -28,6 +28,7 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/favorites', [LikeController::class, 'index']);
 
     Route::put('/swaps/{swap}', [SwapController::class, 'confirm']);
+    Route::delete('/swaps/{swap}/reject', [SwapController::class, 'reject']);
 
     Route::middleware('verified.artist')->group(function () {
         Route::post('/likes', [LikeController::class, 'store']);
