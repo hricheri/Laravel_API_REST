@@ -24,6 +24,8 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/artists/{artist}/availabilities', [AvailabilityController::class, 'store']);
     Route::delete('/artists/{artist}/availabilities', [AvailabilityController::class, 'destroy']);
 
+    Route::get('/favorites', [LikeController::class, 'index']);
+
     Route::middleware('verified.artist')->group(function () {
         Route::post('/likes', [LikeController::class, 'store']);
     });
