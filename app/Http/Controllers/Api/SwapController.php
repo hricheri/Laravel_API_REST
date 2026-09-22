@@ -34,4 +34,31 @@ class SwapController extends Controller
 
         return response()->json(['swap' => $swap], 201);
     }
+
+    public function confirm(Request $request, Swap $swap)
+    {
+        $myArtist = $request->user()->artist;
+
+        if (! $myArtist || ! $swap->isParticipant($myArtist->id)) {
+            return response()->json(['message' => 'Forbidden.'], 403);
+        }
+
+        if ($swap->status !== 'pending') {
+            return response()->json(['message' => 'This swap can no longer be confirmed.'], 422);
+        }
+
+        if ($swap->artist_a_id === $myArtist->id) {
+            $swap->confirmed_by_a = true;
+        } else {
+            $swap->confirmed_by_b = true;
+        }
+
+        if ($swap->confirmed_by_a && $swap->confirmed_by_b) {
+            $swap->status = 'confirmed';
+        }
+
+        $swap->save();
+
+        return response()->json(['swap' => $swap->fresh()], 200);
+    }
 }
