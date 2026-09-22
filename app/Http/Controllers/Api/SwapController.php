@@ -9,6 +9,26 @@ use Illuminate\Http\Request;
 
 class SwapController extends Controller
 {
+    public function index(Request $request)
+    {
+        $user = $request->user();
+
+        if ($user->isAdmin()) {
+            $swaps = Swap::with(['artistA.user', 'artistB.user'])->get();
+
+            return response()->json(['swaps' => $swaps], 200);
+        }
+
+        $myArtist = $user->artist;
+
+        $swaps = Swap::with(['artistA.user', 'artistB.user'])
+            ->where('artist_a_id', $myArtist->id)
+            ->orWhere('artist_b_id', $myArtist->id)
+            ->get();
+
+        return response()->json(['swaps' => $swaps], 200);
+    }
+
     public function store(Request $request)
     {
         $validated = $request->validate([
