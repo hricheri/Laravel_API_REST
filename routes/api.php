@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\ArtistController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\AvailabilityController;
 use App\Http\Controllers\Api\LikeController;
+use App\Http\Controllers\Api\SwapController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -28,6 +29,7 @@ Route::middleware('auth:api')->group(function () {
 
     Route::middleware('verified.artist')->group(function () {
         Route::post('/likes', [LikeController::class, 'store']);
+        Route::post('/swaps', [SwapController::class, 'store']);
     });
 
     Route::middleware('role:admin')->group(function () {
