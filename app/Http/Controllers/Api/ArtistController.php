@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Artist;
+use App\Models\Like;
 use Illuminate\Http\Request;
 
 class ArtistController extends Controller
@@ -25,7 +26,10 @@ class ArtistController extends Controller
     {
         $myArtist = $request->user()->artist;
 
-        $query = Artist::with('user')->where('user_id', '!=', $request->user()->id);
+        $likedIds = Like::where('liker_artist_id', $myArtist->id)->pluck('liked_artist_id')->toArray();
+        $excludedIds = array_merge($likedIds, [$myArtist->id]);
+
+        $query = Artist::with('user')->whereNotIn('id', $excludedIds);
 
         $filter = $request->query('filter', 'all');
 

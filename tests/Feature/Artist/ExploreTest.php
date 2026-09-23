@@ -3,6 +3,7 @@
 namespace Tests\Feature\Artist;
 
 use App\Models\Artist;
+use App\Models\Like;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Passport\Passport;
@@ -45,6 +46,31 @@ class ExploreTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJsonCount(2, 'artists');
+    }
+
+    public function test_an_artist_does_not_see_artists_they_already_liked(): void
+    {
+        $user = User::factory()->create();
+        $myArtist = Artist::factory()->create(['user_id' => $user->id]);
+
+        $likedArtist = Artist::factory()->create();
+        $notLikedArtist = Artist::factory()->create();
+
+        Like::factory()->create([
+            'liker_artist_id' => $myArtist->id,
+            'liked_artist_id' => $likedArtist->id,
+        ]);
+
+        Passport::actingAs($user);
+
+        $response = $this->getJson('/api/artists');
+
+        $response->assertStatus(200)
+            ->assertJsonCount(1, 'artists');
+
+        $ids = collect($response->json('artists'))->pluck('id');
+        $this->assertFalse($ids->contains($likedArtist->id));
+        $this->assertTrue($ids->contains($notLikedArtist->id));
     }
 
     public function test_exploring_artists_fails_without_authentication(): void
