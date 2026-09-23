@@ -1,0 +1,307 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
+
+:root {
+    --lavender-50: #f5f3f8;
+    --lavender-100: #ebe6f0;
+    --lavender-300: #c9bcda;
+    --lavender-500: #a99bc4;
+    --lavender-600: #8f7fae;
+    --lavender-700: #766998;
+    --lavender-900: #4a3f66;
+    --lima-100: #ecf9d8;
+    --lima-200: #d9f2af;
+    --lima-300: #c3e987;
+    --lima-400: #a8d861;
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-400: #9ca3af;
+    --gray-500: #6b7280;
+    --gray-700: #374151;
+    --gray-900: #111827;
+    --red-500: #ef4444;
+    --red-50: #fef2f2;
+    --red-600: #dc2626;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--gray-50);
+    color: var(--gray-900);
+    margin: 0;
+    min-height: 100vh;
+}
+
+.page {
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 2.5rem 1.25rem;
+}
+
+.page-wide {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 2.5rem 1.25rem;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.header h1 {
+    font-weight: 900;
+    font-size: 3.5rem;
+    color: var(--lavender-700);
+    margin: 0 0 0.25rem;
+}
+
+.header p {
+    color: var(--gray-500);
+    margin: 0;
+}
+
+.card {
+    background: white;
+    border-radius: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    border: 1px solid var(--gray-100);
+    padding: 1.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.form-group {
+    margin-bottom: 1.1rem;
+}
+
+label {
+    display: block;
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: var(--gray-700);
+    margin-bottom: 0.35rem;
+}
+
+input[type='text'],
+input[type='email'],
+input[type='password'],
+input[type='file'],
+textarea,
+select {
+    width: 100%;
+    padding: 0.65rem 0.9rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.9rem;
+    font-family: inherit;
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.15s;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+    border-color: var(--lavender-500);
+}
+
+textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.btn {
+    display: inline-block;
+    font-family: inherit;
+    font-weight: 800;
+    font-size: 0.95rem;
+    border: none;
+    border-radius: 1.25rem;
+    padding: 0.75rem 1.5rem;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    transition: background 0.15s, opacity 0.15s;
+}
+
+.btn-block {
+    display: block;
+    width: 100%;
+}
+
+.btn-primary {
+    background: var(--lima-300);
+    color: var(--gray-900);
+}
+
+.btn-primary:hover {
+    background: var(--lima-400);
+}
+
+.btn-secondary {
+    background: var(--lavender-500);
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: var(--lavender-600);
+}
+
+.btn-ghost {
+    background: var(--gray-100);
+    color: var(--gray-700);
+}
+
+.btn-ghost:hover {
+    background: #e5e7eb;
+}
+
+.btn-danger {
+    background: var(--red-50);
+    color: var(--red-600);
+}
+
+.btn-danger:hover {
+    background: #fee2e2;
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.link {
+    color: var(--lavender-700);
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.link:hover {
+    text-decoration: underline;
+}
+
+.center {
+    text-align: center;
+}
+
+.mt-1 {
+    margin-top: 0.75rem;
+}
+
+.mt-2 {
+    margin-top: 1.5rem;
+}
+
+.alert {
+    padding: 0.85rem 1.1rem;
+    border-radius: 1rem;
+    font-size: 0.9rem;
+    font-weight: 700;
+    margin-bottom: 1.25rem;
+}
+
+.alert-error {
+    background: var(--red-50);
+    color: var(--red-600);
+}
+
+.alert-success {
+    background: var(--lima-100);
+    color: #4d7c0f;
+}
+
+.badge {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    padding: 0.25rem 0.7rem;
+    border-radius: 999px;
+}
+
+.badge-lavender {
+    background: var(--lavender-300);
+    color: var(--gray-900);
+}
+
+.badge-lima {
+    background: var(--lima-300);
+    color: var(--gray-900);
+}
+
+.badge-gray {
+    background: var(--gray-100);
+    color: var(--gray-500);
+}
+
+.nav {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 2rem;
+    background: white;
+    border-radius: 1.25rem;
+    padding: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    border: 1px solid var(--gray-100);
+}
+
+.nav a {
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: var(--gray-500);
+    text-decoration: none;
+    padding: 0.55rem 1rem;
+    border-radius: 0.9rem;
+    transition: background 0.15s, color 0.15s;
+}
+
+.nav a:hover {
+    background: var(--gray-100);
+}
+
+.nav a.active {
+    background: var(--lima-300);
+    color: var(--gray-900);
+}
+
+.profile-photo {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: var(--gray-100);
+}
+
+.card-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+}
+
+@media (min-width: 640px) {
+    .card-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.tag {
+    display: inline-block;
+    font-size: 0.75rem;
+    background: var(--gray-100);
+    color: var(--gray-700);
+    padding: 0.3rem 0.7rem;
+    border-radius: 999px;
+    margin: 0.15rem 0.25rem 0.15rem 0;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 2.5rem 1rem;
+    color: var(--gray-500);
+}
