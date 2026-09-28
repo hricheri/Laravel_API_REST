@@ -8,16 +8,18 @@ API REST desarrollada en Laravel 13 con autenticación mediante Laravel Passport
 - [Stack tecnológico](#stack-tecnológico)
 - [Requisitos previos](#requisitos-previos)
 - [Instalación](#instalación)
+- [Cómo probar la aplicación](#cómo-probar-la-aplicación)
 - [Roles y autorización](#roles-y-autorización)
 - [Lógica de negocio destacada](#lógica-de-negocio-destacada)
 - [Endpoints de la API](#endpoints-de-la-api)
 - [Testing](#testing)
 - [Cliente front-end](#cliente-front-end)
 - [Estructura del proyecto](#estructura-del-proyecto)
+- [Decisiones de diseño y limitaciones](#decisiones-de-diseño-y-limitaciones)
 
 ## Descripción del dominio
 
-Tattoo Swap conecta tatuadores que quieren viajar: cada artista puede ofrecer su estudio y su disponibilidad de fechas para intercambiar temporalmente con otro artista en otra ciudad. La aplicación gestiona perfiles, un sistema de "explorar y dar like" similar a otras apps de matching, y el flujo completo de un **swap** (intercambio), incluyendo el cálculo automático de fechas en común entre dos artistas.
+Tattoo Swap conecta tatuadores que quieren viajar: cada artista puede ofrecer su disponibilidad de fechas para intercambiar temporalmente con otro artista en otra ciudad. La aplicación gestiona perfiles, un sistema de "explorar y dar like" similar a otras apps de matching, y el flujo completo de un **swap** (intercambio), incluyendo el cálculo automático de fechas en común entre dos artistas.
 
 ## Stack tecnológico
 
@@ -53,14 +55,52 @@ touch database/database.sqlite
 # Ejecutar migraciones
 php artisan migrate
 
-# Instalar Passport (genera claves de encriptación y cliente OAuth)
+# Generar las claves de Passport y el cliente de tokens personales
+php artisan passport:keys
 php artisan passport:client --personal --name="Tattoo Swap Personal Client" --no-interaction
+
+# Exponer las imágenes subidas (fotos de perfil)
+php artisan storage:link
 
 # Levantar el servidor
 php artisan serve
 ```
 
 La API queda disponible en `http://127.0.0.1:8000/api`, y el cliente web en `http://127.0.0.1:8000/client/login.html`.
+
+> **Importante:** el cliente tiene configurada la URL `http://127.0.0.1:8000` (en `public/client/js/api.js`). Hay que levantar el servidor exactamente en ese host y puerto, o ajustar la constante `API_BASE_URL`.
+
+## Cómo probar la aplicación
+
+Los roles y la verificación no se pueden gestionar desde la interfaz, así que para probar el flujo completo hay que preparar algunos datos con `php artisan tinker`.
+
+### 1. Crear usuarios
+
+Registrá al menos **dos artistas** desde `http://127.0.0.1:8000/client/register.html` (para poder generar un match entre ellos).
+
+### 2. Crear un usuario admin
+
+Registrá un tercer usuario desde el cliente y convertilo en admin:
+
+```php
+\App\Models\User::where('email', 'admin@example.com')->update(['role' => 'admin']);
+```
+
+### 3. Verificar artistas
+
+Los artistas nuevos no están verificados, por lo que no pueden dar like, ver la disponibilidad de otros ni crear swaps. Un admin los verifica con `PUT /api/artists/{id}` (body `{"is_verified": true}`). Como el cliente no tiene pantalla de admin, la forma más rápida es:
+
+```php
+\App\Models\Artist::query()->update(['is_verified' => true]);
+```
+
+### 4. Recorrer el flujo completo
+
+1. Cada artista marca su disponibilidad en **Availability** (rango de fechas o días sueltos), con fechas que se solapen.
+2. El artista A da like al B desde **Explore**. El B da like al A. Ambos aparecen ahora con badge **Match** en **Favorites**.
+3. Desde **Favorites**, "Start a Swap" calcula automáticamente las fechas en común.
+4. Cada artista confirma en **Swaps**. Al confirmar los dos, el swap pasa a `confirmed`.
+5. Cualquiera puede rechazar (si está pendiente) o cancelar (si está confirmado).
 
 ## Roles y autorización
 
@@ -83,8 +123,9 @@ Además, cada `Artist` tiene un flag `is_verified` (booleano, gestionado por un 
 | Crear un swap | ❌ | ✅ |
 
 La autorización se implementa con dos middlewares personalizados:
-- `role:{rol}` — restringe el acceso según el rol del usuario (`app/Http/Middleware/EnsureUserHasRole.php`)
-- `verified.artist` — exige que el artist autenticado esté verificado (`app/Http/Middleware/EnsureArtistIsVerified.php`)
+
+- `role:{rol}`: restringe el acceso según el rol del usuario (`app/Http/Middleware/EnsureUserHasRole.php`)
+- `verified.artist`: exige que el artist autenticado esté verificado (`app/Http/Middleware/EnsureArtistIsVerified.php`)
 
 Todas las rutas protegidas requieren un token Bearer válido emitido por Passport (middleware `auth:api`).
 
@@ -95,8 +136,8 @@ Más allá del CRUD estándar, el sistema implementa una regla de cálculo real 
 1. Dos artistas solo pueden iniciar un swap si existe **match mutuo** (ambos se dieron like entre sí).
 2. Al crear el swap, el sistema calcula automáticamente la **intersección de fechas disponibles** entre ambos artistas (comparando sus registros de `Availability`), y guarda el primer y último día de esa intersección como `start_date`/`end_date`.
 3. Si no hay fechas en común, el swap se crea igual pero con fechas nulas.
-4. El swap requiere **doble confirmación** (cada artista debe confirmar por separado); solo pasa a `confirmed` cuando ambos lo hicieron.
-5. Un swap `pending` puede rechazarse (`rejected`); un swap `confirmed` puede cancelarse (`cancelled`) — la misma acción de "rechazar" produce un resultado distinto según el estado actual.
+4. El swap requiere **doble confirmación**: cada artista debe confirmar por separado, y solo pasa a `confirmed` cuando ambos lo hicieron.
+5. Un swap `pending` puede rechazarse (`rejected`); un swap `confirmed` puede cancelarse (`cancelled`). La misma acción produce un resultado distinto según el estado actual.
 
 Esta lógica vive en `app/Models/Swap.php` (método `calculateOverlap`) y está cubierta por tests dedicados en `tests/Feature/Swaps/`.
 
@@ -116,9 +157,9 @@ Esta lógica vive en `app/Models/Swap.php` (método `calculateOverlap`) y está 
 |---|---|---|---|
 | GET | `/api/me` | Mi perfil completo | Autenticado |
 | PUT | `/api/me` | Actualizar mi perfil (nombre, bio, ciudad, foto) | Autenticado |
-| GET | `/api/artists` | Explorar artistas (con filtros) o listado completo | Autenticado (comportamiento según rol) |
+| GET | `/api/artists` | Explorar artistas (excluye al propio y a los ya likeados) o listado completo si es admin | Autenticado (comportamiento según rol) |
 | GET | `/api/artists?filter=city&city=X` | Filtrar por ciudad | Autenticado |
-| PUT | `/api/artists/{artist}` | Verificar un artista | Admin |
+| PUT | `/api/artists/{artist}` | Verificar un artista (`is_verified`) | Admin |
 
 ### Disponibilidad
 
@@ -146,7 +187,7 @@ Esta lógica vive en `app/Models/Swap.php` (método `calculateOverlap`) y está 
 
 ## Testing
 
-El proyecto sigue un enfoque **TDD estricto**: cada endpoint fue implementado escribiendo primero el test (rojo), y luego el código mínimo necesario para hacerlo pasar (verde). Los tests usan PHPUnit puro (clases con `extends TestCase`), sobre una base SQLite que se resetea en cada test (`RefreshDatabase`).
+El proyecto sigue un enfoque **TDD**: cada endpoint fue implementado escribiendo primero el test (rojo) y luego el código mínimo necesario para hacerlo pasar (verde). Los tests usan PHPUnit (clases que extienden `TestCase`), sobre una base SQLite en memoria que se resetea en cada test (`RefreshDatabase`). El cliente OAuth personal de Passport se crea automáticamente en `tests/TestCase.php`, por lo que no requiere configuración previa.
 
 ```bash
 # Correr toda la suite
@@ -172,32 +213,39 @@ Cliente estático en `public/client/`, servido directamente por Laravel (sin bui
 | `swaps.html` | Ver swaps propios, confirmar o rechazar/cancelar |
 | `availability.html` | Calendario para marcar disponibilidad por rango de fechas o días sueltos |
 
-Con el servidor corriendo (`php artisan serve`), el cliente es accesible en `http://127.0.0.1:8000/client/login.html`.
-
 ## Estructura del proyecto
 
+```
 app/
-Http/
-Controllers/Api/ → AuthController, ArtistController, AvailabilityController, LikeController, SwapController
-Middleware/ → EnsureUserHasRole, EnsureArtistIsVerified
-Models/ → User, Artist, Availability, Like, Swap
+  Http/
+    Controllers/Api/   → AuthController, ArtistController, AvailabilityController,
+                         LikeController, SwapController
+    Middleware/        → EnsureUserHasRole, EnsureArtistIsVerified
+  Models/              → User, Artist, Availability, Like, Swap
 database/
-factories/ → factories para tests (ArtistFactory, AvailabilityFactory, LikeFactory, SwapFactory)
-migrations/
+  factories/           → ArtistFactory, AvailabilityFactory, LikeFactory, SwapFactory
+  migrations/
 public/
-client/ → cliente HTML/CSS/JS
+  client/              → cliente HTML/CSS/JS
 routes/
-api.php → definición de todos los endpoints
+  api.php              → definición de todos los endpoints
 tests/
-Feature/
-Auth/ → register, login, logout
-Artist/ → perfil propio, explore
-Admin/ → listado y verificación de artistas
-Availability/ → marcar, borrar, ver disponibilidad
-Likes/ → dar like, listar favoritos
-Swaps/ → crear, confirmar, rechazar/cancelar, listar
+  Feature/
+    Auth/              → register, login, logout
+    Artist/            → perfil propio, explore
+    Admin/             → listado y verificación de artistas
+    Availability/      → marcar, borrar, ver disponibilidad
+    Likes/             → dar like, listar favoritos
+    Swaps/             → crear, confirmar, rechazar/cancelar, listar
+```
 
+## Decisiones de diseño y limitaciones
+
+- **Alcance:** Studio y Home (parte del perfil en la app original) quedaron fuera de esta API para concentrarse en Artist, Availability, Likes y Swaps. Por eso `city` es un campo directo de `Artist`.
+- **Cálculo de fechas del swap:** se calcula una sola vez, al crearlo (snapshot). Si después alguno de los dos modifica su disponibilidad, el swap no se recalcula; hay que rechazarlo y crear uno nuevo.
+- **Fechas en común:** se guardan el primer y el último día de la intersección, no el bloque contiguo más largo.
+- **Administración:** no hay pantalla de admin en el cliente; el endpoint de verificación existe y está probado, pero se consume vía API o tinker.
 
 ## Autor
 
-Proyecto desarrollado como trabajo académico, evolucionando el dominio de Tattoo Swap hacia una API REST con Passport, roles, TDD y cliente propio.
+Proyecto desarrollado como trabajo académico, partiendo desde el proyecto anterior 'Tattoo Swap' hacia una API REST con Passport, roles, TDD y cliente propio.
